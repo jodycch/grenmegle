@@ -33,24 +33,24 @@ io.on('connection', (socket) => {
     if (waitingQueue.length > 0) {
       // Match found
       const partnerSocket = waitingQueue.shift();
-      
+
       // Check if partner is still connected
       if (waitingQueue.includes(partnerSocket) || io.sockets.sockets.get(partnerSocket.id)) {
-          const roomId = `${socket.id}#${partnerSocket.id}`;
-          
-          socket.join(roomId);
-          partnerSocket.join(roomId);
-          
-          // Notify both users
-          io.to(roomId).emit('match_found', { roomId });
-          
-          socket.emit('role', 'initiator'); // One peer initiates the offer
-          partnerSocket.emit('role', 'receiver');
-          
-          console.log(`Matched ${socket.id} with ${partnerSocket.id} in room ${roomId}`);
+        const roomId = `${socket.id}#${partnerSocket.id}`;
+
+        socket.join(roomId);
+        partnerSocket.join(roomId);
+
+        // Notify both users
+        io.to(roomId).emit('match_found', { roomId });
+
+        socket.emit('role', 'initiator'); // One peer initiates the offer
+        partnerSocket.emit('role', 'receiver');
+
+        console.log(`Matched ${socket.id} with ${partnerSocket.id} in room ${roomId}`);
       } else {
-           // Partner disconnected in mean time, add self to queue
-           waitingQueue.push(socket);
+        // Partner disconnected in mean time, add self to queue
+        waitingQueue.push(socket);
       }
     } else {
       // No one waiting, add to queue
@@ -69,9 +69,9 @@ io.on('connection', (socket) => {
 
   // Handle Disconnect / Next
   socket.on('leave_room', (roomId) => {
-      socket.to(roomId).emit('partner_left');
-      socket.leave(roomId);
-      // Logic: User might want to search again immediately
+    socket.to(roomId).emit('partner_left');
+    socket.leave(roomId);
+    // Logic: User might want to search again immediately
   });
 
   socket.on('disconnect', () => {
@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
 });
 
 // Catch-all handler for any request that doesn't match above
-app.get('*', (req, res) => {
+app.get('/(.*)', (req, res) => {
   res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
